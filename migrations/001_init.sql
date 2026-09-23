@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS urls (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    code       TEXT NOT NULL,
+    original   TEXT NOT NULL,
+    click_count INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (code)
+);
