@@ -9,10 +9,23 @@ import (
 	"github.com/popey17/urlshortener/internal/store"
 )
 
-func withCORS(next http.Handler) http.Handler {
+func isAllowed(origin string, allowed []string) bool {
+	for _, a := range allowed {
+		if origin == a {
+			return true
+		}
+	}
+	return false
+}
+
+func withCORS(next http.Handler, allowed []string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8000")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
+		origin := r.Header.Get("Origin")
+		if origin != "" && isAllowed(origin, allowed) {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Vary", "Origin")
+		}
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == http.MethodOptions {
@@ -48,5 +61,5 @@ func main() {
 	mux.HandleFunc("POST /api/v1/urls", h.CreateUrl)
 	mux.HandleFunc("GET /{code}", h.Redirect)
 
-	log.Fatal(http.ListenAndServe(port, withCORS(mux)))
+	log.Fatal(http.ListenAndServe(port, withCORS(mux, cfg.CorsOrigins)))
 }
