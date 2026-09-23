@@ -24,8 +24,12 @@ func checkEnvVal(target, defaultVal string, finalVal *string) {
 
 func Load() (Cfg, error) {
 	config := Cfg{}
-
-	checkEnvVal("ADDR", ":8080", &config.Addr)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	addr := ":" + port
+	config.Addr = addr
 	checkEnvVal("BASE_URL", "http://localhost:8080", &config.BaseUrl)
 	checkEnvVal("DB_PATH", "data/app.db", &config.DbPath)
 	config.CodeSize = 7
