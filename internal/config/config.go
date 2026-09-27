@@ -1,8 +1,11 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 type Cfg struct {
@@ -10,6 +13,7 @@ type Cfg struct {
 	BaseUrl     string
 	DbPath      string
 	CorsOrigins []string
+	DatabaseURL string
 }
 
 func checkEnvVal(target, defaultVal string, finalVal *string) {
@@ -46,8 +50,12 @@ func parseCorsOrigins(raw string) []string {
 	return origins
 }
 
-func Load() (Cfg, error) {
-	config := Cfg{}
+func Load() (*Cfg, error) {
+	if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {
+		return nil, fmt.Errorf("loading .env: %w", err)
+	}
+
+	config := &Cfg{}
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -57,6 +65,11 @@ func Load() (Cfg, error) {
 	checkEnvVal("BASE_URL", "http://localhost:8080", &config.BaseUrl)
 	checkEnvVal("DB_PATH", "data/app.db", &config.DbPath)
 	config.CorsOrigins = parseCorsOrigins(os.Getenv("CORS_ORIGINS"))
+	url := os.Getenv("DATABASE_URL")
+	if url == "" {
+		return nil, fmt.Errorf("DATABASE_URL is required")
+	}
+	config.DatabaseURL = url
 
 	return config, nil
 }

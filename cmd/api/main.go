@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -38,14 +39,17 @@ func withCORS(next http.Handler, allowed []string) http.Handler {
 }
 
 func main() {
-	cfg, _ := config.Load()
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	port := cfg.Addr
-	// fmt.Println(cfg)
+	fmt.Println(port)
 
 	mux := http.NewServeMux()
 
-	s, err := store.OpenDB(cfg.DbPath)
+	s, err := store.OpenDB(cfg.DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
